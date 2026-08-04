@@ -1,0 +1,9 @@
+{
+  "name": "paralnoia-news-updater",
+  "private": true,
+  "type": "module",
+  "description": "Node dependency for the scheduled news-fetch script (see scripts/update-news.mjs). The site itself is plain static HTML/CSS/JS.",
+  "dependencies": {
+    "rss-parser": "^3.13.0"
+  }
+}

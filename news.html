@@ -34,10 +34,22 @@
 <main>
   <section class="page-hero">
     <h1 class="text-gradient">News</h1>
-    <p>The latest UFO, paranormal, and unexplained news.</p>
+    <p>UFO, UAP, alien, paranormal, ghost, and cryptid stories — plus official NASA and ESA investigation coverage — pulled automatically from UK, European, and US news sources.</p>
+    <p class="news-updated" id="news-updated"></p>
   </section>
   <section class="page-content">
-    <div class="placeholder-panel">Content coming soon.</div>
+    <div class="news-region">
+      <h2 class="news-region-heading">UK News</h2>
+      <div class="news-grid" id="news-grid-uk"></div>
+    </div>
+    <div class="news-region">
+      <h2 class="news-region-heading">European News</h2>
+      <div class="news-grid" id="news-grid-europe"></div>
+    </div>
+    <div class="news-region">
+      <h2 class="news-region-heading">US News</h2>
+      <div class="news-grid" id="news-grid-us"></div>
+    </div>
   </section>
 </main>
 
@@ -54,6 +66,7 @@
   <p class="footer-copy">&copy; 2026 Paralnoia. All rights reserved.</p>
 </footer>
 
+<script src="js/news-data.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
