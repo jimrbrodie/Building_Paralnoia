@@ -108,6 +108,16 @@ const NOISE_PATTERN = new RegExp(
 // headline with no obvious entertainment keyword) are still filtered here.
 const NOISE_SOURCE_PATTERN = /\b(NME|Gizmodo|Collider|BroadwayWorld|Niche Gamer|OpenCritic|Babystep Magazine|Live4ever Media|The Bold Italic)\b/i;
 
+// "Ghost"/"alien" are also everyday idioms unrelated to the paranormal —
+// fraud/logistics jargon ("ghost gun", "ghost employees") and immigration
+// terminology ("illegal/overstaying alien"). Catch the specific phrasings
+// observed in practice; this list will need to grow as new idioms surface.
+const IDIOM_NOISE_PATTERN = new RegExp(
+  "\\b(ghost gun|ghost employee|ghost worker|ghost payroll|ghost car|ghost fleet|" +
+  "(illegal|overstaying|undocumented|resident) alien|alien (smuggling|registration|deportation))\\b",
+  "i"
+);
+
 const MAX_ITEMS_PER_REGION = 24;
 const REQUEST_HEADERS = { "User-Agent": "Mozilla/5.0 ParalnoiaNewsBot/1.0 (+https://github.com/jimrbrodie/Building_Paralnoia)" };
 
@@ -160,7 +170,10 @@ async function fetchFeed(feed) {
   }
 }
 
-async function buildRegion(region, feeds) {
+// Returns every matching item, sorted newest-first, deliberately NOT sliced
+// to a max count or deduped against other regions yet — main() handles
+// cross-region deduplication before each region's final cut is taken.
+async function buildRegion(feeds) {
   const results = await Promise.all(feeds.map(fetchFeed));
   const allItems = results.flat();
 
@@ -173,7 +186,11 @@ async function buildRegion(region, feeds) {
     const haystack = `${title} ${snippet}`;
 
     if (!KEYWORD_PATTERN.test(haystack)) continue;
-    if (NOISE_PATTERN.test(haystack) || NOISE_SOURCE_PATTERN.test(item.sourceName || "")) continue;
+    if (
+      NOISE_PATTERN.test(haystack) ||
+      IDIOM_NOISE_PATTERN.test(haystack) ||
+      NOISE_SOURCE_PATTERN.test(item.sourceName || "")
+    ) continue;
     if (!item.link || seen.has(item.link)) continue;
     seen.add(item.link);
 
@@ -190,15 +207,34 @@ async function buildRegion(region, feeds) {
   }
 
   matched.sort((a, b) => b._sortDate - a._sortDate);
-  return matched.slice(0, MAX_ITEMS_PER_REGION).map(({ _sortDate, ...rest }) => rest);
+  return matched;
+}
+
+// A story covered by more than one region's feeds (common with the Google
+// News layer, since its English-language editions overlap heavily) is kept
+// only in the first region that claims it, checked in this priority order.
+function dedupeAcrossRegions(regionLists) {
+  const globalSeen = new Set();
+  return regionLists.map((list) => {
+    const kept = [];
+    for (const item of list) {
+      if (globalSeen.has(item.url)) continue;
+      globalSeen.add(item.url);
+      kept.push(item);
+      if (kept.length >= MAX_ITEMS_PER_REGION) break;
+    }
+    return kept.map(({ _sortDate, ...rest }) => rest);
+  });
 }
 
 async function main() {
-  const [uk, europe, us] = await Promise.all([
-    buildRegion("uk", FEEDS.uk),
-    buildRegion("europe", FEEDS.europe),
-    buildRegion("us", FEEDS.us),
+  const [ukAll, europeAll, usAll] = await Promise.all([
+    buildRegion(FEEDS.uk),
+    buildRegion(FEEDS.europe),
+    buildRegion(FEEDS.us),
   ]);
+
+  const [uk, europe, us] = dedupeAcrossRegions([ukAll, europeAll, usAll]);
 
   const newsData = {
     updatedAt: new Date().toISOString(),
