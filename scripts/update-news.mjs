@@ -130,6 +130,15 @@ function truncate(text, max) {
   return text.slice(0, max).replace(/\s+\S*$/, "") + "…";
 }
 
+// Google News descriptions are "{title} {source}" — if a source's own
+// name happens to contain a trigger word (e.g. a real US radio station
+// called "Bigfoot 99 Radio"), that word must not count as a content match.
+function stripSourceSuffix(text, source) {
+  if (!source) return text;
+  const suffix = ` ${source}`;
+  return text.endsWith(suffix) ? text.slice(0, -suffix.length).trim() : text;
+}
+
 function buildExcerpt(rawSnippet, title, source) {
   const cleaned = stripHtml(rawSnippet);
 
@@ -182,7 +191,8 @@ async function buildRegion(feeds) {
 
   for (const item of allItems) {
     const title = item.title || "";
-    const snippet = item.contentSnippet || stripHtml(item.content || item["content:encoded"] || "");
+    const rawSnippet = item.contentSnippet || stripHtml(item.content || item["content:encoded"] || "");
+    const snippet = stripSourceSuffix(rawSnippet, item.sourceName);
     const haystack = `${title} ${snippet}`;
 
     if (!KEYWORD_PATTERN.test(haystack)) continue;
