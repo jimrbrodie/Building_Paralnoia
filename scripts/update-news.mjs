@@ -88,7 +88,27 @@ const KEYWORD_PATTERN = new RegExp(
   "i"
 );
 
-const MAX_ITEMS_PER_REGION = 15;
+// Common "ghost"/"haunt"/"bigfoot"/"alien" hits are entertainment coverage
+// (a TV show literally called Ghosts, "Ghost Recon" the video game, a band's
+// album, etc.) rather than real paranormal/UFO news — drop matches that also
+// look like entertainment coverage. Imperfect (a headline alone doesn't
+// always give this away), but removes most of the noise.
+const NOISE_PATTERN = new RegExp(
+  "\\b(movie|film|box office|tv series|television series|sitcom|season \\d+|episode|trailer|" +
+  "album|\\bep\\b|single|tour dates?|concert|setlist|band|musician|rapper|singer|songwriter|" +
+  "theatre|theater|broadway|west end|musical|" +
+  "video ?game|xbox|playstation|nintendo|ubisoft|\\bdlc\\b|" +
+  "netflix|hbo|disney\\+|hulu|amazon prime video|" +
+  "actor|actress|casting|starring|sequel|franchise|spin-?off|reboot)\\b",
+  "i"
+);
+
+// A handful of outlets in these feeds are entertainment/gaming publications
+// specifically — any of their stories that slip past NOISE_PATTERN (e.g. a
+// headline with no obvious entertainment keyword) are still filtered here.
+const NOISE_SOURCE_PATTERN = /\b(NME|Gizmodo|Collider|BroadwayWorld|Niche Gamer|OpenCritic|Babystep Magazine|Live4ever Media|The Bold Italic)\b/i;
+
+const MAX_ITEMS_PER_REGION = 24;
 const REQUEST_HEADERS = { "User-Agent": "Mozilla/5.0 ParalnoiaNewsBot/1.0 (+https://github.com/jimrbrodie/Building_Paralnoia)" };
 
 function stripHtml(html) {
@@ -102,7 +122,15 @@ function truncate(text, max) {
 
 function buildExcerpt(rawSnippet, title, source) {
   const cleaned = stripHtml(rawSnippet);
-  if (!cleaned || cleaned.length < 15 || cleaned === title) {
+
+  // Google News descriptions are just "{title} {source}" restated, not a
+  // real summary — detect that pattern (rather than requiring an exact
+  // match, since the source name is appended) and fall back to a generic line.
+  const looksLikeTitleRepeat =
+    cleaned.toLowerCase().startsWith(title.toLowerCase()) &&
+    cleaned.length - title.length < 60;
+
+  if (!cleaned || cleaned.length < 15 || looksLikeTitleRepeat) {
     return `Read the full story from ${source}.`;
   }
   return truncate(cleaned, 160);
@@ -145,6 +173,7 @@ async function buildRegion(region, feeds) {
     const haystack = `${title} ${snippet}`;
 
     if (!KEYWORD_PATTERN.test(haystack)) continue;
+    if (NOISE_PATTERN.test(haystack) || NOISE_SOURCE_PATTERN.test(item.sourceName || "")) continue;
     if (!item.link || seen.has(item.link)) continue;
     seen.add(item.link);
 
