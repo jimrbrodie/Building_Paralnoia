@@ -8,22 +8,77 @@ const parser = new Parser({
     item: [
       ["media:thumbnail", "mediaThumbnail"],
       ["media:content", "mediaContent"],
+      ["source", "gnSource"],
     ],
   },
 });
+
+// Google News search RSS aggregates across many publishers for a region
+// (not just one outlet) — the query itself does the keyword narrowing,
+// and KEYWORD_PATTERN below still re-checks every item as a safety net.
+const GOOGLE_NEWS_QUERY_TERMS = [
+  "UFO", "UAP", "alien", "aliens", "paranormal", "ghost", "ghosts",
+  "cryptid", "cryptids", "bigfoot",
+  '"unidentified anomalous phenomena"', '"unidentified aerial phenomena"',
+];
+
+function googleNewsUrl({ hl, gl, ceid }) {
+  const params = new URLSearchParams({
+    q: GOOGLE_NEWS_QUERY_TERMS.join(" OR "),
+    hl,
+    gl,
+    ceid,
+  });
+  return `https://news.google.com/rss/search?${params.toString()}`;
+}
+
+// Google News titles arrive as "Headline - Publisher" with the real
+// publisher in a <source> tag — pull both apart so cards show the
+// original outlet instead of "Google News" for every story.
+function parseGoogleNewsItem(item, fallbackName) {
+  const source =
+    (typeof item.gnSource === "string" && item.gnSource) ||
+    item.gnSource?._ ||
+    fallbackName;
+
+  let title = (item.title || "").trim();
+  const suffix = ` - ${source}`;
+  if (title.endsWith(suffix)) {
+    title = title.slice(0, -suffix.length).trim();
+  }
+
+  return { sourceName: source, title };
+}
 
 const FEEDS = {
   uk: [
     { url: "https://feeds.bbci.co.uk/news/uk/rss.xml", name: "BBC News" },
     { url: "https://feeds.bbci.co.uk/news/science_and_environment/rss.xml", name: "BBC Science & Environment" },
+    {
+      url: googleNewsUrl({ hl: "en-GB", gl: "GB", ceid: "GB:en" }),
+      name: "Google News (UK)",
+      parseItem: (item) => parseGoogleNewsItem(item, "Google News (UK)"),
+    },
   ],
   europe: [
     { url: "https://www.euronews.com/rss", name: "Euronews" },
     { url: "https://www.esa.int/rssfeed/TopNews", name: "European Space Agency" },
+    {
+      // Google News has no "Europe" continent edition, only country ones —
+      // the Ireland edition is used as an English-language stand-in.
+      url: googleNewsUrl({ hl: "en-IE", gl: "IE", ceid: "IE:en" }),
+      name: "Google News (Europe)",
+      parseItem: (item) => parseGoogleNewsItem(item, "Google News (Europe)"),
+    },
   ],
   us: [
     { url: "https://feeds.npr.org/1001/rss.xml", name: "NPR News" },
     { url: "https://www.nasa.gov/rss/dyn/breaking_news.rss", name: "NASA" },
+    {
+      url: googleNewsUrl({ hl: "en-US", gl: "US", ceid: "US:en" }),
+      name: "Google News (US)",
+      parseItem: (item) => parseGoogleNewsItem(item, "Google News (US)"),
+    },
   ],
 };
 
@@ -45,6 +100,14 @@ function truncate(text, max) {
   return text.slice(0, max).replace(/\s+\S*$/, "") + "…";
 }
 
+function buildExcerpt(rawSnippet, title, source) {
+  const cleaned = stripHtml(rawSnippet);
+  if (!cleaned || cleaned.length < 15 || cleaned === title) {
+    return `Read the full story from ${source}.`;
+  }
+  return truncate(cleaned, 160);
+}
+
 function extractImage(item) {
   if (item.mediaThumbnail?.$?.url) return item.mediaThumbnail.$.url;
   if (item.mediaContent?.$?.url) return item.mediaContent.$.url;
@@ -59,7 +122,10 @@ async function fetchFeed(feed) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const xml = await res.text();
     const parsed = await parser.parseString(xml);
-    return (parsed.items || []).map((item) => ({ ...item, sourceName: feed.name }));
+    return (parsed.items || []).map((item) => {
+      const overrides = feed.parseItem ? feed.parseItem(item) : { sourceName: feed.name };
+      return { ...item, ...overrides };
+    });
   } catch (err) {
     console.error(`Failed to fetch ${feed.name} (${feed.url}): ${err.message}`);
     return [];
@@ -82,11 +148,12 @@ async function buildRegion(region, feeds) {
     if (!item.link || seen.has(item.link)) continue;
     seen.add(item.link);
 
+    const cleanTitle = title.trim();
     matched.push({
-      title: title.trim(),
+      title: cleanTitle,
       source: item.sourceName,
       date: item.isoDate ? item.isoDate.slice(0, 10) : new Date().toISOString().slice(0, 10),
-      excerpt: truncate(snippet, 160),
+      excerpt: buildExcerpt(snippet, cleanTitle, item.sourceName),
       image: extractImage(item),
       url: item.link,
       _sortDate: item.isoDate ? new Date(item.isoDate).getTime() : 0,
