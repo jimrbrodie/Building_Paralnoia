@@ -94,12 +94,12 @@ const KEYWORD_PATTERN = new RegExp(
 // look like entertainment coverage. Imperfect (a headline alone doesn't
 // always give this away), but removes most of the noise.
 const NOISE_PATTERN = new RegExp(
-  "\\b(movie|film|box office|tv series|television series|sitcom|season \\d+|episode|streaming|trailer|" +
-  "album|\\bep\\b|single|tour dates?|concert|setlist|band|musician|rapper|singer|songwriter|" +
+  "\\b(movies?|films?|box office|tv series|television series|sitcom|season \\d+|episodes?|streaming|trailer|" +
+  "albums?|\\bep\\b|singles?|tour dates?|concerts?|setlist|bands?|musicians?|rapper|singer|songwriter|" +
   "theatre|theater|broadway|west end|musical|" +
-  "video ?game|xbox|playstation|nintendo|ubisoft|\\bdlc\\b|" +
+  "video ?games?|xbox|playstation|nintendo|ubisoft|\\bdlc\\b|" +
   "netflix|hbo|disney\\+|hulu|amazon prime video|" +
-  "actor|actress|casting|starring|sequel|franchise|spin-?off|reboot|" +
+  "actors?|actress(es)?|casting|starring|sequels?|franchises?|spin-?offs?|reboots?|" +
   // specific franchises/products that repeatedly surface and aren't paranormal news
   "ghost recon|fireteam elite|ghost rider|alien: ?romulus|paranormal activity|" +
   "hatbox ghost|mnsshp|not.so.scary halloween party|popcorn bucket|walt disney world|" +
@@ -123,7 +123,7 @@ const IDIOM_NOISE_PATTERN = new RegExp(
   "\\b(ghost gun|ghost employee|ghost worker|ghost payroll|ghost car|ghost fleet|ghost plates?|" +
   "ghost town|ghost ship|ghost lineage|ghost population|ghost ancestor|ghost dna|" +
   "ghost(ing|ed)? (you|us|me|them|him|her)|" +
-  "(illegal|overstaying|undocumented|resident) alien|alien (smuggling|registration|deportation))\\b",
+  "(illegal|overstaying|undocumented|resident) aliens?|aliens? (smuggling|registration|deportation))\\b",
   "i"
 );
 
