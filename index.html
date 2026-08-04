@@ -8,10 +8,11 @@
 <link rel="icon" href="assets/Paralnoia_Logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Questrial&family=Mulish:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
+<div class="bg-ambient" aria-hidden="true"></div>
 
 <div id="intro-screen">
   <video id="intro-video" src="assets/Paralnoia_Vid.mp4" playsinline></video>
@@ -42,13 +43,17 @@
 
 <main>
   <section class="home-hero">
-    <img class="hero-logo" src="assets/Paralnoia_Logo.png" alt="Paralnoia" />
-    <h1 class="hero-welcome text-gradient">Welcome to Paralnoia</h1>
-    <p class="hero-sub">Chronicling UFOs, the paranormal, and the unexplained — sightings, investigations, and the stories that don't add up.</p>
-    <div class="home-links">
-      <a href="news.html">Latest News</a>
-      <a href="articles.html">Articles</a>
-      <a href="reporting.html">Report a Sighting</a>
+    <video class="hero-bg-video" src="assets/Paralnoia_Vid.mp4" autoplay muted loop playsinline></video>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <img class="hero-logo" src="assets/Paralnoia_Logo.png" alt="Paralnoia" />
+      <h1 class="hero-welcome text-gradient">Welcome to Paralnoia</h1>
+      <p class="hero-sub">Chronicling UFOs, the paranormal, and the unexplained — sightings, investigations, and the stories that don't add up.</p>
+      <div class="home-links">
+        <a href="news.html">Latest News</a>
+        <a href="articles.html">Articles</a>
+        <a href="reporting.html">Report a Sighting</a>
+      </div>
     </div>
   </section>
 </main>
