@@ -94,26 +94,35 @@ const KEYWORD_PATTERN = new RegExp(
 // look like entertainment coverage. Imperfect (a headline alone doesn't
 // always give this away), but removes most of the noise.
 const NOISE_PATTERN = new RegExp(
-  "\\b(movie|film|box office|tv series|television series|sitcom|season \\d+|episode|trailer|" +
+  "\\b(movie|film|box office|tv series|television series|sitcom|season \\d+|episode|streaming|trailer|" +
   "album|\\bep\\b|single|tour dates?|concert|setlist|band|musician|rapper|singer|songwriter|" +
   "theatre|theater|broadway|west end|musical|" +
   "video ?game|xbox|playstation|nintendo|ubisoft|\\bdlc\\b|" +
   "netflix|hbo|disney\\+|hulu|amazon prime video|" +
-  "actor|actress|casting|starring|sequel|franchise|spin-?off|reboot)\\b",
+  "actor|actress|casting|starring|sequel|franchise|spin-?off|reboot|" +
+  // specific franchises/products that repeatedly surface and aren't paranormal news
+  "ghost recon|fireteam elite|ghost rider|alien: ?romulus|paranormal activity|" +
+  "hatbox ghost|mnsshp|not.so.scary halloween party|popcorn bucket|walt disney world|" +
+  "brooks ghost|ghost bat|tobias forge)\\b",
   "i"
 );
 
-// A handful of outlets in these feeds are entertainment/gaming publications
-// specifically — any of their stories that slip past NOISE_PATTERN (e.g. a
-// headline with no obvious entertainment keyword) are still filtered here.
-const NOISE_SOURCE_PATTERN = /\b(NME|Gizmodo|Collider|BroadwayWorld|Niche Gamer|OpenCritic|Babystep Magazine|Live4ever Media|The Bold Italic)\b/i;
+// A handful of outlets in these feeds are entertainment/gaming/fan-site
+// publications specifically — any of their stories that slip past
+// NOISE_PATTERN (e.g. a headline with no obvious entertainment keyword)
+// are still filtered here.
+const NOISE_SOURCE_PATTERN = /\b(NME|Gizmodo|Collider|BroadwayWorld|Niche Gamer|OpenCritic|Babystep Magazine|Live4ever Media|The Bold Italic|WDWMagic|WDW News Today|Disney Food Blog|Alien vs\.? Predator Galaxy|BLABBERMOUTH\.NET)\b/i;
 
 // "Ghost"/"alien" are also everyday idioms unrelated to the paranormal —
-// fraud/logistics jargon ("ghost gun", "ghost employees") and immigration
-// terminology ("illegal/overstaying alien"). Catch the specific phrasings
-// observed in practice; this list will need to grow as new idioms surface.
+// fraud/logistics jargon ("ghost gun", "ghost employees"), immigration
+// terminology ("illegal/overstaying alien"), dating slang ("ghosting"),
+// and recurring non-paranormal science/political usage ("ghost lineage"
+// in genetics, "ghost town/ship" as decline metaphors). Catch the specific
+// phrasings observed in practice; this list will need to grow over time.
 const IDIOM_NOISE_PATTERN = new RegExp(
-  "\\b(ghost gun|ghost employee|ghost worker|ghost payroll|ghost car|ghost fleet|" +
+  "\\b(ghost gun|ghost employee|ghost worker|ghost payroll|ghost car|ghost fleet|ghost plates?|" +
+  "ghost town|ghost ship|ghost lineage|ghost population|ghost ancestor|ghost dna|" +
+  "ghost(ing|ed)? (you|us|me|them|him|her)|" +
   "(illegal|overstaying|undocumented|resident) alien|alien (smuggling|registration|deportation))\\b",
   "i"
 );
