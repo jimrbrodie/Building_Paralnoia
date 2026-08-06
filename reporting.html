@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Reporting — Paralnoia</title>
+<title>Report a Sighting — Paralnoia</title>
 <meta name="description" content="Report a UFO sighting or paranormal encounter to Paralnoia." />
 <link rel="icon" href="assets/Paralnoia_Logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -33,11 +33,95 @@
 
 <main>
   <section class="page-hero">
-    <h1 class="text-gradient">Reporting</h1>
-    <p>Report a sighting or unexplained encounter.</p>
+    <h1 class="text-gradient">Report a Sighting</h1>
+    <p>Tell us what you saw. We'll automatically pull together the weather, astronomical, and aircraft conditions for that time and place to help build a fuller picture of your report.</p>
   </section>
+
   <section class="page-content">
-    <div class="placeholder-panel">Content coming soon.</div>
+    <form id="report-form" class="report-form" action="https://formspree.io/f/mppawqry" method="POST" novalidate>
+
+      <fieldset class="report-section">
+        <legend>Your Details</legend>
+
+        <label class="checkbox-field">
+          <input type="checkbox" id="anonymous" name="anonymous" />
+          <span>I'd like to remain anonymous</span>
+        </label>
+
+        <div id="contact-fields" class="field-grid">
+          <label class="field">
+            <span>Name</span>
+            <input type="text" id="reporter-name" name="name" autocomplete="name" />
+          </label>
+          <label class="field">
+            <span>Email</span>
+            <input type="email" id="reporter-email" name="email" autocomplete="email" />
+          </label>
+          <label class="field">
+            <span>Phone <em>(optional)</em></span>
+            <input type="tel" id="reporter-phone" name="phone" autocomplete="tel" />
+          </label>
+        </div>
+
+        <label class="checkbox-field">
+          <input type="checkbox" id="follow-up" name="follow_up_ok" />
+          <span>I'm happy to be contacted for a follow-up about this report</span>
+        </label>
+      </fieldset>
+
+      <fieldset class="report-section">
+        <legend>Location &amp; Time</legend>
+
+        <div class="field-grid">
+          <label class="field field-wide">
+            <span>Location</span>
+            <div class="input-with-button">
+              <input type="text" id="location-text" name="location" placeholder="Town, city, or landmark" />
+              <button type="button" id="use-location-btn" class="btn-secondary">Use My Location</button>
+            </div>
+            <span id="location-status" class="field-hint"></span>
+          </label>
+          <label class="field">
+            <span>Date</span>
+            <input type="date" id="sighting-date" name="date" required />
+          </label>
+          <label class="field">
+            <span>Time of Day</span>
+            <input type="time" id="sighting-time" name="time" required />
+          </label>
+        </div>
+        <input type="hidden" id="location-lat" name="latitude" />
+        <input type="hidden" id="location-lon" name="longitude" />
+      </fieldset>
+
+      <fieldset class="report-section">
+        <legend>What Did You See?</legend>
+        <label class="field">
+          <span>Description</span>
+          <textarea id="description" name="description" rows="6" placeholder="Describe what you saw, how long it lasted, movement, sound, lighting, and anything else that stood out." required></textarea>
+        </label>
+        <label class="field">
+          <span>Photo or Video Evidence <em>(optional)</em></span>
+          <input type="file" id="media" name="attachment" accept="image/*,video/*" />
+        </label>
+      </fieldset>
+
+      <div class="report-actions">
+        <button type="button" id="generate-report-btn" class="btn-primary">Generate Sky Report</button>
+        <span id="generate-status" class="field-hint"></span>
+      </div>
+
+      <section id="dashboard" class="dashboard" hidden>
+        <h2 class="dashboard-heading text-gradient">Conditions at Time of Sighting</h2>
+        <div class="dashboard-grid" id="dashboard-grid"></div>
+      </section>
+
+      <div class="report-actions">
+        <button type="submit" id="submit-report-btn" class="btn-primary" disabled>Submit Report</button>
+        <span id="submit-status" class="field-hint"></span>
+      </div>
+
+    </form>
   </section>
 </main>
 
@@ -54,6 +138,10 @@
   <p class="footer-copy">&copy; 2026 Paralnoia. All rights reserved.</p>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/astronomy-engine@2/astronomy.browser.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/satellite.js@5/dist/satellite.min.js"></script>
+<script src="js/satellite-data.js"></script>
 <script src="js/main.js"></script>
+<script src="js/reporting.js"></script>
 </body>
 </html>
