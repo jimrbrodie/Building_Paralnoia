@@ -110,8 +110,11 @@ const NOISE_PATTERN = new RegExp(
 // A handful of outlets in these feeds are entertainment/gaming/fan-site
 // publications specifically — any of their stories that slip past
 // NOISE_PATTERN (e.g. a headline with no obvious entertainment keyword)
-// are still filtered here.
-const NOISE_SOURCE_PATTERN = /\b(NME|Gizmodo|Collider|BroadwayWorld|Niche Gamer|OpenCritic|Babystep Magazine|Live4ever Media|The Bold Italic|WDWMagic|WDW News Today|Disney Food Blog|Alien vs\.? Predator Galaxy|BLABBERMOUTH\.NET)\b/i;
+// are still filtered here. FanDuel Sportsbook is here for a different
+// reason: it assigns teams single-word code names (e.g. Aston Villa =
+// "GHOST") in its odds headlines, which trip the keyword match with zero
+// paranormal content.
+const NOISE_SOURCE_PATTERN = /\b(NME|Gizmodo|Collider|BroadwayWorld|Niche Gamer|OpenCritic|Babystep Magazine|Live4ever Media|The Bold Italic|WDWMagic|WDW News Today|Disney Food Blog|Alien vs\.? Predator Galaxy|BLABBERMOUTH\.NET|FanDuel Sportsbook)\b/i;
 
 // "Ghost"/"alien" are also everyday idioms unrelated to the paranormal —
 // fraud/logistics jargon ("ghost gun", "ghost employees"), immigration
@@ -126,6 +129,12 @@ const IDIOM_NOISE_PATTERN = new RegExp(
   "(illegal|overstaying|undocumented|resident) aliens?|aliens? (smuggling|registration|deportation))\\b",
   "i"
 );
+
+// Sportsbooks (FanDuel and others) assign teams single-word all-caps code
+// names in odds headlines — Aston Villa is "(GHOST)" — with zero paranormal
+// content. Case-sensitive and requires the parens so it only catches that
+// codename convention, not genuine mentions of the word "ghost".
+const CODENAME_NOISE_PATTERN = /\(GHOST\)/;
 
 const MAX_ITEMS_PER_REGION = 24;
 const REQUEST_HEADERS = { "User-Agent": "Mozilla/5.0 ParalnoiaNewsBot/1.0 (+https://github.com/jimrbrodie/Building_Paralnoia)" };
@@ -210,6 +219,7 @@ async function buildRegion(feeds) {
     if (
       NOISE_PATTERN.test(haystack) ||
       IDIOM_NOISE_PATTERN.test(haystack) ||
+      CODENAME_NOISE_PATTERN.test(haystack) ||
       NOISE_SOURCE_PATTERN.test(item.sourceName || "")
     ) continue;
     if (!item.link || seen.has(item.link)) continue;
