@@ -1,0 +1,10 @@
+# js/news-data.js, js/satellite-data.js, and main.js change up to several
+# times a day, but Hostinger's default Cache-Control (max-age=604800, 7
+# days) was letting browsers show week-old cached copies. Force revalidation
+# on every request instead — cheap (a 304 when nothing changed) and keeps
+# visitors' pages in sync with the latest automated update.
+<IfModule mod_headers.c>
+  <FilesMatch "\.js$">
+    Header set Cache-Control "no-cache, must-revalidate"
+  </FilesMatch>
+</IfModule>
